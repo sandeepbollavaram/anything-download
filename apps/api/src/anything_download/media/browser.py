@@ -121,7 +121,8 @@ async def _page(
             ) from exc
         try:
             context = await browser.new_context(
-                viewport=viewport,  # type: ignore[arg-type]
+                # Typed only when the optional playwright extra is installed.
+                viewport=viewport,  # type: ignore[arg-type, unused-ignore]
                 user_agent=settings.user_agent,
                 java_script_enabled=True,
                 accept_downloads=False,
