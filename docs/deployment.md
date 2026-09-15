@@ -387,4 +387,4 @@ Last full local verification: 2026-09-15 (release engineering pass).
 | DNS | **Not connected** | domain registered with GoDaddy; no records point at a server |
 | Staging deployment | **Not deployed** | no server exists yet |
 | Production deployment | **Not deployed** | no server exists yet |
-| CI | **Not verified** | workflow parses and was reviewed; it has never run (no push) |
+| CI | Verified | all 6 jobs green on commit `041465a` ([run](https://github.com/sandeepbollavaram/anything-download/actions/runs/34927792644)) |

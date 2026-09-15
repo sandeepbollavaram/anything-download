@@ -7,9 +7,9 @@ Update it whenever a gate changes; never mark a gate verified without evidence.
 | --- | --- |
 | Project | Anything Download |
 | Date of verification | 2026-09-15 |
-| Release status | **READY FOR CI** (local release candidate, fully validated locally) |
+| Release status | **READY FOR STAGING** (validated locally and in CI; not deployed) |
 | UI | 8.6/10 release baseline (redesign frozen) |
-| CI | **NOT VERIFIED** (the workflow has never run; it needs a push) |
+| CI | **Green** on commit `041465a` ([run 34927792644](https://github.com/sandeepbollavaram/anything-download/actions/runs/34927792644)); all 6 jobs passed |
 | Staging | **NOT DEPLOYED** (no server yet) |
 | Production | **NOT DEPLOYED** (no server yet) |
 | Domain | `anythingdownload.in`, purchased through GoDaddy; DNS not connected to any server |
@@ -27,6 +27,23 @@ Update it whenever a gate changes; never mark a gate verified without evidence.
 | Browser (Playwright, against the Docker stack) | 46/46 passed. One earlier run right after the containers started had 1 transient failure; the next two full runs passed |
 | Extension | typecheck; unit 22/22; browser 20 passed, 2 skipped by default; the 2 live API tests passed against the Docker API (`EXT_REAL_API_ORIGIN=http://127.0.0.1:8000`) |
 | Clean export (only committable files, fresh virtualenv, frozen pnpm install) | API tests 326 passed / 2 skipped, web lint, typecheck and build, extension checks, and both Docker images: all pass |
+
+## CI results (GitHub Actions, commit `041465a`)
+
+| Job | Result |
+| --- | --- |
+| API lint, typecheck, tests | ruff and mypy clean; pytest 328 passed on Linux with FFmpeg (nothing skipped); coverage 73 % |
+| Web lint, typecheck, build | pass |
+| Web + API e2e (production build) | 46 passed (44 plus the isolated rate-limit pass of 2) |
+| Docker images and Compose smoke | pass: stack healthy, real QR job completed through Redis, worker and FFmpeg image; Trivy found 0 fixable HIGH/CRITICAL |
+| Dependency audit | pip-audit: no known vulnerabilities; pnpm audit: pass |
+| Chrome extension | typecheck, unit tests, browser tests 20 passed (2 live-API tests skipped by design) |
+
+The first CI run (commit `f6dca9c`) failed only at mypy: a `type: ignore` that
+is needed when the optional playwright extra is installed was reported as
+unused without it. Fixed in `041465a`; mypy now passes in both environments.
+GitHub warns that some pinned actions target Node.js 20 (deprecated; forced to
+Node.js 24). Not a failure; update the pins in a later maintenance pass.
 
 ## Infrastructure and security results
 
@@ -65,7 +82,7 @@ Production overlay started from the clean export, with no `.env`,
 
 ## Known limitations
 
-- CI requires a push before it can be verified.
+- Pinned GitHub Actions still target the deprecated Node.js 20 runtime.
 - A real staging deployment requires a server.
 - Browser tools (screenshot, URL to PDF) are off by default and need validation
   with real Chromium in a custom worker image.
@@ -84,14 +101,14 @@ Production overlay started from the clean export, with no `.env`,
 
 ## Human gates (not crossed)
 
-These require the owner's authorisation and were not performed: `git add`,
-`git commit`, `git push`, GoDaddy DNS or nameserver changes, creating servers or
+The owner authorised the initial push. Not performed: GoDaddy DNS or
+nameserver changes, creating servers or
 cloud accounts, spending money, using credentials, and any staging or production
 deployment.
 
 ## Next human actions
 
-1. Review the working tree, then commit and push when satisfied, and watch CI.
+1. Keep CI green on every push to `main`.
 2. Create a staging server, add the `staging` A record, and follow
    [deployment](deployment.md#staging-and-production-runbook).
 3. Run the staging smoke tests and a manual check of the Chrome extension.
