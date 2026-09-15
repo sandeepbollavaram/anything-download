@@ -15,9 +15,7 @@ credentials*.json
 service-account*.json
 
 # --- AI assistant / editor state (never commit) ------------------------------
-.cursor/*
-!.cursor/rules/
-!.cursor/rules/**
+.cursor/
 .cursorrules
 .cursorignore
 .cursor-*

@@ -10,9 +10,32 @@ marked done.
       output-size enforcement, Redis AOF
 - [x] Production Compose overlay: HTTPS edge, no application ports, container limits
 - [x] CI covering API, web, E2E on the production build, Docker smoke, extension, audits
-- [ ] CI executed on a pushed revision
+- [x] CI executed on a pushed revision (all jobs green on `main`)
 - [ ] Staging environment deployed and verified (public TLS, firewall, real jobs)
 - [ ] Production monitoring (see [observability](engineering/observability.md))
+
+## Launch plan for anythingdownload.in
+
+The domain is registered with GoDaddy; DNS is not connected yet. Steps, in order
+(details in [deployment.md](deployment.md)):
+
+1. **Staging server.** Rent a small VPS (2 vCPU, 4 GB RAM, Ubuntu 24.04), harden
+   SSH, install Docker, apply the firewall.
+2. **Staging DNS.** In GoDaddy add `A staging -> STAGING_SERVER_IPV4`; wait until it
+   resolves publicly.
+3. **Deploy staging** with `AD_DOMAIN=staging.anythingdownload.in` and a `noindex`
+   header; confirm Caddy obtains the certificate.
+4. **Verify staging:** health and readiness, SSRF refusal, real jobs, the browser test
+   suite, the Chrome extension pointed at staging, and a day of normal use.
+5. **Monitoring minimum:** an external uptime check on `/api/v1/ready` and
+   certificate expiry alerts, before any public traffic.
+6. **Production server and DNS:** remove GoDaddy's parked `A @` record, add
+   `A @ -> SERVER_IPV4` (and `CNAME www -> anythingdownload.in` with a Caddy
+   redirect if `www` is wanted).
+7. **Deploy production** from the exact commit verified on staging; repeat the
+   smoke tests; keep the previous commit ready for rollback.
+8. **After launch:** Chrome Web Store submission, request and error-rate metrics,
+   per-client active-job caps, and the FFmpeg upgrade.
 
 ## 1. Chrome extension: first version built
 
