@@ -1,0 +1,112 @@
+# ---------------------------------------------------------------------------
+# Anything Download: repository ignore rules
+# ---------------------------------------------------------------------------
+
+# --- Secrets & environment ---------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials*.json
+service-account*.json
+
+# --- AI assistant / editor state (never commit) ------------------------------
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+.cursorrules
+.cursorignore
+.cursor-*
+.claude/
+.claude-*
+CLAUDE.md
+# Written by `next dev` for AI coding agents; regenerated locally, not project source.
+AGENTS.md
+.codex/
+.aider*
+.continue/
+.windsurf/
+.copilot/
+*.agent-state*
+*.memory.json
+memory/
+agent-transcripts/
+transcripts/
+.specstory/
+.history/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# --- OS junk -----------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Node / frontend ---------------------------------------------------------
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+next-env.d.ts
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.eslintcache
+
+# --- Python / backend --------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.python-version
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.log
+
+# --- Runtime data (temporary media, uploads, results) ------------------------
+data/
+# Anchored: an unanchored `storage/` also ignored the API's source package
+# apps/api/src/anything_download/storage/.
+/storage/
+tmp/
+temp/
+*.tmp
+apps/api/data/
+apps/api/storage/
+
+# --- Docker ------------------------------------------------------------------
+docker-compose.override.yml
+
+# --- Local tooling -----------------------------------------------------------
+.tooling/
+# Anchored: an unanchored `tools/` also ignored apps/api/src/anything_download/tools/
+# and apps/web/src/app/tools/ (most of the application).
+/tools/

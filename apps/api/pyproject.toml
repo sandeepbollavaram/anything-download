@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anything-download-api"
+version = "0.1.0"
+description = "Anything Download backend: URL analysis, job processing, media/document tools."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+  "fastapi>=0.141,<1",
+  "uvicorn[standard]>=0.52,<1",
+  "pydantic>=2.13,<3",
+  "pydantic-settings>=2.15,<3",
+  "httpx>=0.28,<1",
+  "redis>=8.1,<9",
+  "structlog>=26.1",
+  "python-multipart>=0.0.32",
+  "beautifulsoup4>=4.15",
+  "pillow>=12.3",
+  "pikepdf>=10.13",
+  "pypdfium2>=5.13",
+  "segno>=1.6",
+  "zxing-cpp>=3.1",
+  "yt-dlp>=2026.8.19",
+]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.62"]
+dev = [
+  "pytest>=9.1",
+  "pytest-asyncio>=1.4",
+  "pytest-cov>=7",
+  "fakeredis>=2.38",
+  "respx>=0.23",
+  "ruff>=0.16",
+  "mypy>=2.3",
+  "types-beautifulsoup4",
+  "httpx>=0.28",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "S", "ASYNC", "PL", "RUF", "N", "SIM", "PTH", "BLE"]
+ignore = [
+  "S101",    # assert used (fine in tests, we exclude tests separately)
+  "PLR0913", # too many arguments
+  "PLR2004", # magic values
+  "PLR0912", # too many branches
+  "PLR0911", # too many return statements
+  "PLR0915", # too many statements
+  "RUF012",  # mutable class attributes
+  "S603",    # subprocess call; we always use argument arrays, validated below
+  "S607",    # partial executable path; binaries are resolved from configured PATH
+  "ASYNC109", # explicit timeout parameters are intentional and always enforced
+  "ASYNC240", # tiny stat/exists calls on local files are acceptable in async code
+  "PLC0415",  # local imports are used deliberately for optional deps and cycle breaking
+  "E501",     # ruff format governs code width; long user-facing strings are allowed
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "PLR", "ASYNC", "B", "E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+mypy_path = "src"
+packages = ["anything_download"]
+exclude = ["tests/"]
+
+[[tool.mypy.overrides]]
+module = ["yt_dlp", "yt_dlp.*", "segno", "zxingcpp", "pypdfium2", "pypdfium2.*", "pikepdf", "pikepdf.*", "fakeredis", "fakeredis.*", "playwright", "playwright.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+  "integration: tests that require Redis (fakeredis or real) and the job worker",
+  "security: security-focused tests",
+  "external: tests that hit real third-party services (never run in default CI)",
+  "ffmpeg: tests that require ffmpeg/ffprobe binaries",
+  "browser: tests that require Playwright + Chromium",
+]
+filterwarnings = ["error::DeprecationWarning:anything_download.*"]

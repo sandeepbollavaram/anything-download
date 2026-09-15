@@ -1,0 +1,19 @@
+---
+description: Security and privacy controls that must not be weakened
+alwaysApply: true
+---
+
+# Security
+
+Treat every URL, filename, header, and upload as hostile.
+
+- Only `http`/`https`. Block `javascript:`, `data:`, `file:`, `ftp:`, credentials in URLs.
+- SSRF: reject private/loopback/link-local/reserved IPs (including mapped/6to4/Teredo/NAT64), metadata hosts, single-label and `.local`/`.internal` names, unusual IPv4 spellings.
+- Resolve DNS, validate every answer, pin the connection IP, send original Host/SNI. Re-validate redirects.
+- `AD_ALLOW_PRIVATE_TARGETS` is test-only and must fail startup when `AD_ENV=production`.
+- Subprocess: argument arrays only, never `shell=True` with untrusted input. Timeouts and cleanup required.
+- Stream large bodies. Enforce size, page, pixel, duration, queue, and concurrency limits.
+- Sanitize filenames. Storage IDs are hex only. Paths must stay inside the storage root.
+- Logs redact cookies, Authorization, tokens, secrets, and query strings.
+- Production responses never include stack traces.
+- No advertising SDKs or third-party analytics by default.

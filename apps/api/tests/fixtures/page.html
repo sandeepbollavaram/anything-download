@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fixture Page: Test</title>
+  <meta name="description" content="A page used by tests.">
+  <meta property="og:title" content="OG Title">
+  <meta property="og:image" content="/images/og.jpg">
+  <meta property="og:video" content="https://cdn.example.org/media/clip.mp4">
+  <meta name="twitter:image" content="https://cdn.example.org/tw.png">
+  <link rel="canonical" href="https://site.example/page">
+  <link rel="icon" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"VideoObject","name":"LD Video","contentUrl":"https://cdn.example.org/ld.webm","thumbnailUrl":"https://cdn.example.org/ld-thumb.jpg"}
+  </script>
+</head>
+<body>
+  <img src="/images/a.jpg" alt="Image A" width="640" height="480">
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="inline">
+  <img src="/pixel.gif" width="1" height="1">
+  <img data-src="https://cdn.example.org/lazy.webp" srcset="https://cdn.example.org/lazy-2x.webp 2x">
+  <picture><source srcset="/images/pic.avif" type="image/avif"><img src="/images/pic.jpg"></picture>
+  <video poster="/images/poster.png" title="Clip"><source src="/media/clip.webm" type="video/webm"></video>
+  <audio src="/media/track.mp3"></audio>
+  <a href="/docs/report.pdf">Annual report</a>
+  <a href="/docs/archive.zip">Archive</a>
+  <a href="/about">About</a>
+  <a href="javascript:void(0)">js</a>
+  <a href="http://127.0.0.1/secret.pdf">local</a>
+  <a href="http://localhost/x.pdf">localhost</a>
+  <a href="https://metadata.google.internal/x.mp4">metadata</a>
+</body>
+</html>

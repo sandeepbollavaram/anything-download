@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Anything Download Settings</title>
+    <link rel="stylesheet" href="../theme.css" />
+    <link rel="stylesheet" href="options.css" />
+    <script type="module" src="options.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>Settings</h1>
+
+      <form id="server-form" novalidate>
+        <fieldset>
+          <legend>Server</legend>
+          <label for="server">Anything Download address</label>
+          <input id="server" name="server" type="url" inputmode="url" autocomplete="url" spellcheck="false" aria-describedby="server-help server-error" required />
+          <p id="server-help" class="help">
+            Leave as <code>https://anythingdownload.in</code> unless you run your own server. HTTPS is required (plain HTTP is allowed only for <code>localhost</code>). You will be asked to allow access to that one address.
+          </p>
+          <p id="server-error" class="error" role="alert" hidden></p>
+          <div class="row">
+            <button class="button primary" type="submit">Save server</button>
+            <button id="reset" class="button secondary" type="button">Use default</button>
+          </div>
+          <p id="server-status" class="status" role="status"></p>
+        </fieldset>
+      </form>
+
+      <fieldset>
+        <legend>Appearance</legend>
+        <label for="theme">Theme</label>
+        <select id="theme" name="theme">
+          <option value="system">Match system</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </fieldset>
+
+      <section class="privacy" aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading">What this extension sends</h2>
+        <ul>
+          <li>The address of the page you are on, only when you choose an action.</li>
+          <li>Nothing else: no cookies, page content, history, account data or analytics.</li>
+          <li>Settings stay in this browser.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

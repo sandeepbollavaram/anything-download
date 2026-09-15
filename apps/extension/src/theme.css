@@ -1,0 +1,182 @@
+/*
+ * Design tokens shared by the popup and options page. Values mirror the website
+ * (apps/web/src/app/globals.css) so the extension feels like the same product.
+ * Brand navy, electric blue and cyan; the primary action uses the brand gradient.
+ * Every text/background pair used below meets WCAG AA (4.5:1) in both themes; control
+ * borders meet 3:1.
+ */
+:root {
+  color-scheme: light;
+  --background: #f5f7fb;
+  --foreground: #0b1b3a;
+  --card: #ffffff;
+  --muted: #eef2f8;
+  --muted-foreground: #4a5670;
+  --border: #dfe5f0;
+  --control-border: #7d89a1;
+  --accent: #1450e6;
+  --accent-foreground: #ffffff;
+  --accent-soft: #e8efff;
+  --link: #1244c7;
+  --ring: #1450e6;
+  --success: #0b7a4b;
+  --warning: #8a4b00;
+  --warning-soft: #fdf2df;
+  --info: #0f3fb8;
+  --info-soft: #e8efff;
+  --destructive: #b42318;
+  --destructive-soft: #fdeceb;
+  --grad-brand: linear-gradient(135deg, #1244d6 0%, #1a62ee 100%);
+  --shadow-sm: 0 1px 2px rgb(11 27 58 / 0.05), 0 2px 8px -2px rgb(11 27 58 / 0.06);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius: 12px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #050b19;
+  --foreground: #eef2fb;
+  --card: #0b1630;
+  --muted: #111d38;
+  --muted-foreground: #a9b6d0;
+  --border: #1b2a4a;
+  --control-border: #6c7ea3;
+  --accent: #4d86ff;
+  --accent-foreground: #04102a;
+  --accent-soft: #0f2350;
+  --link: #8ab2ff;
+  --ring: #8ab2ff;
+  --success: #4fd39a;
+  --warning: #ffc266;
+  --warning-soft: #33250c;
+  --info: #b3cbff;
+  --info-soft: #0f2350;
+  --destructive: #ff8a80;
+  --destructive-soft: #3a1616;
+  --grad-brand: linear-gradient(135deg, #4d86ff 0%, #5fa4ff 100%);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 8px -2px rgb(0 0 0 / 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #050b19;
+    --foreground: #eef2fb;
+    --card: #0b1630;
+    --muted: #111d38;
+    --muted-foreground: #a9b6d0;
+    --border: #1b2a4a;
+    --control-border: #6c7ea3;
+    --accent: #4d86ff;
+    --accent-foreground: #04102a;
+    --accent-soft: #0f2350;
+    --link: #8ab2ff;
+    --ring: #8ab2ff;
+    --success: #4fd39a;
+    --warning: #ffc266;
+    --warning-soft: #33250c;
+    --info: #b3cbff;
+    --info-soft: #0f2350;
+    --destructive: #ff8a80;
+    --destructive-soft: #3a1616;
+    --grad-brand: linear-gradient(135deg, #4d86ff 0%, #5fa4ff 100%);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 8px -2px rgb(0 0 0 / 0.4);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Component display rules must never override the hidden attribute. */
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sprite {
+  display: none;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out, transform 150ms ease-out, filter 150ms ease-out;
+  touch-action: manipulation;
+}
+
+.button.primary {
+  background: var(--accent);
+  background-image: var(--grad-brand);
+  color: var(--accent-foreground);
+  box-shadow: var(--shadow-sm);
+}
+
+.button.primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button.secondary {
+  background: var(--card);
+  color: var(--foreground);
+  border-color: var(--control-border);
+}
+
+.button.secondary:hover:not(:disabled) {
+  background: var(--muted);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

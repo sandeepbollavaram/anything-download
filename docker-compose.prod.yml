@@ -1,0 +1,121 @@
+# Production overlay. Use together with the base file:
+#
+#   AD_DOMAIN=anythingdownload.in \
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Differences from the development stack:
+# - Caddy terminates HTTPS and is the only service with published ports.
+# - Redis, FastAPI and Next.js are reachable only on the internal network.
+# - Every service has CPU/memory/PID limits, dropped privileges and rotated logs.
+# See docs/deployment.md for sizing and the host firewall.
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+x-app-env: &app-env
+  AD_ENV: production
+  AD_LOG_FORMAT: json
+  AD_PUBLIC_URL: https://${AD_DOMAIN:?set AD_DOMAIN}
+  AD_TRUST_PROXY_HEADERS: "true"
+  AD_ENABLE_DOCS: "false"
+  AD_ALLOW_PRIVATE_TARGETS: "false"
+  AD_RATE_LIMIT_ENABLED: "true"
+  AD_MIN_FREE_DISK_MB: ${AD_MIN_FREE_DISK_MB:-4096}
+  AD_MAX_STORAGE_MB: ${AD_MAX_STORAGE_MB:-0}
+  AD_FFMPEG_THREADS: ${AD_FFMPEG_THREADS:-2}
+
+services:
+  caddy:
+    <<: *hardening
+    image: caddy:2.10-alpine
+    depends_on:
+      - web
+      - api
+    environment:
+      AD_DOMAIN: ${AD_DOMAIN:?set AD_DOMAIN}
+    ports:
+      - "${AD_HTTP_PORT:-80}:80"
+      - "${AD_HTTPS_PORT:-443}:443"
+      - "${AD_HTTPS_PORT:-443}:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 256M, pids: 256 }
+
+  redis:
+    <<: *hardening
+    # noeviction: when memory is full Redis refuses writes (new jobs fail cleanly)
+    # instead of silently evicting job records that users are still polling.
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --appendfsync
+      - everysec
+      - --save
+      - ""
+      - --maxmemory
+      - 200mb
+      - --maxmemory-policy
+      - noeviction
+    ports: !reset []
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M, pids: 128 }
+
+  api:
+    <<: *hardening
+    ports: !reset []
+    environment: *app-env
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 1G, pids: 256 }
+
+  worker:
+    <<: *hardening
+    environment: *app-env
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        # AD_MAX_CONCURRENT_JOBS (2) x AD_FFMPEG_THREADS (2) ffmpeg threads fit in 2 CPUs.
+        limits: { cpus: "2.0", memory: 2G, pids: 512 }
+
+  cleanup:
+    <<: *hardening
+    environment: *app-env
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 256M, pids: 64 }
+
+  web:
+    <<: *hardening
+    build:
+      args:
+        NEXT_PUBLIC_SITE_URL: https://${AD_DOMAIN:?set AD_DOMAIN}
+        NEXT_PUBLIC_API_URL: http://api:8000
+    environment:
+      NEXT_PUBLIC_SITE_URL: https://${AD_DOMAIN:?set AD_DOMAIN}
+      NEXT_PUBLIC_API_URL: http://api:8000
+    ports: !reset []
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 768M, pids: 256 }
+
+volumes:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,28 @@
+# Line endings: LF in the repository and in working trees, matching .editorconfig.
+# Many files were authored on Windows with CRLF; git normalizes them on commit.
+* text=auto eol=lf
+
+# Shell scripts run inside Linux containers; a CRLF entrypoint fails with
+# "/bin/sh^M: bad interpreter". Keep them LF regardless of local settings.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+
+# PowerShell is conventionally CRLF on Windows.
+*.ps1 text eol=crlf
+
+# Binary assets: never convert or diff as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary
+*.zip binary

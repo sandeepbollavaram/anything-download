@@ -1,0 +1,130 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    # AOF so a Redis restart does not drop queued/in-flight jobs and job records
+    # while their files survive on the storage volume. fsync once a second bounds
+    # loss to ~1 s of writes on a crash; RDB snapshots stay off. Every key already
+    # carries a TTL, so the file stays small.
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--save", ""]
+    volumes:
+      - redis-data:/data
+    # Loopback only: Redis has no auth here. The host mapping exists so an API run
+    # outside Docker can reach it; containers use the internal network name.
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    command: ["api"]
+    # Optional: a fresh clone (and CI) has no .env; every setting has a safe default.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      AD_ENV: development
+      AD_REDIS_URL: redis://redis:6379/0
+      AD_STORAGE_DIR: /data
+      AD_PUBLIC_URL: http://localhost:3000
+      AD_ENABLE_DOCS: "true"
+    volumes:
+      - storage:/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    command: ["worker"]
+    # Optional: a fresh clone (and CI) has no .env; every setting has a safe default.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      AD_ENV: development
+      AD_REDIS_URL: redis://redis:6379/0
+      AD_STORAGE_DIR: /data
+    volumes:
+      - storage:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  cleanup:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    command: ["cleanup"]
+    # Optional: a fresh clone (and CI) has no .env; every setting has a safe default.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      AD_ENV: development
+      AD_REDIS_URL: redis://redis:6379/0
+      AD_STORAGE_DIR: /data
+    volumes:
+      - storage:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      # NEXT_PUBLIC_API_URL is only used by the Next server: browsers always call
+      # same-origin /api, which the server rewrites to this address. Inside the web
+      # container localhost is the web container itself, so it must be the api
+      # service name. Rewrites are resolved at build time, hence the build arg.
+      args:
+        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        NEXT_PUBLIC_API_URL: http://api:8000
+        NEXT_PUBLIC_SITE_NAME: Anything Download
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://api:8000
+      NEXT_PUBLIC_SITE_NAME: Anything Download
+    ports:
+      - "3000:3000"
+    # Without a healthcheck, `docker compose up --wait` (and Caddy's depends_on) would not
+    # wait for Next.js to listen. The image has node but no curl/wget.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then((r) => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  storage:
+  redis-data:

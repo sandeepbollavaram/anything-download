@@ -1,0 +1,49 @@
+# Production edge for Anything Download: the only service with public ports.
+#
+#   Internet --HTTPS--> Caddy --/api/*--> FastAPI (api:8000)
+#                             \--/*-----> Next.js (web:3000)
+#
+# Uploads go straight to FastAPI and are streamed (Caddy does not buffer request
+# bodies), so large files never pass through the Next.js proxy.
+{
+	# Nothing reconfigures Caddy at runtime; do not expose its admin API.
+	admin off
+}
+
+{$AD_DOMAIN} {
+	encode zstd gzip
+
+	# An oversized declared upload is refused by FastAPI from its Content-Length before
+	# a byte is stored. A client that keeps sending after that response can stall until
+	# its own timeout (normal TCP behaviour for early rejection, at this edge or any
+	# other), so the website checks the file size against GET /api/v1/limits first.
+	# An edge rule keyed on Content-Length was tried and removed: it returned 500 for
+	# chunked uploads, which carry no Content-Length.
+	# Operational counters (exact free disk space, failure totals) are for the operator,
+	# not the internet: they would help time a storage-exhaustion attempt. Read them from
+	# inside the Docker network instead (see docs/deployment.md).
+	handle /api/v1/metrics {
+		respond "Not Found" 404
+	}
+
+	handle /api/* {
+		# 201 MB: one above AD_MAX_UPLOAD_SIZE_MB, so FastAPI reports the exact limit
+		# for bodies without a declared length.
+		request_body {
+			max_size 201MB
+		}
+		# Caddy does not trust X-Forwarded-For from clients (no trusted_proxies are
+		# configured): it sets the header to the connecting peer. The API uses the
+		# rightmost entry, so a forged header cannot change a client's rate-limit identity.
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+
+	header -Server
+
+	# No access log: request lines contain user-submitted URLs. Operational signals
+	# come from the API's internal /api/v1/metrics counters instead.
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@anything-download/extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Manifest V3 Chrome extension: a companion to the Anything Download website.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test:unit": "node --test \"tests/unit/*.test.mjs\"",
+    "test:e2e": "playwright test",
+    "test": "node --test \"tests/unit/*.test.mjs\" && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/chrome": "^0.1.4",
+    "@types/node": "^24.5.2",
+    "typescript": "^5.9.2"
+  }
+}
