@@ -122,6 +122,17 @@ export const copy = {
     chooseOperation: "Choose an operation",
     optionsHeading: "Options",
     cannotProcess: "Can't process this source",
+    youtubeTitle: "Why YouTube links often fail here",
+    youtubeBody:
+      "YouTube blocks many cloud servers with a “confirm you're not a bot” check. We never try to get around it.",
+    youtubeTips: [
+      "Your own video? Download the original from YouTube Studio (Content, then the ⋮ menu, then Download) and upload it here.",
+      "Direct video links and file uploads always work.",
+      "Running Anything Download on your own computer uses your normal connection.",
+    ],
+    youtubeSelfHost: "How to run it yourself",
+    platformNote:
+      "YouTube currently blocks many servers, so YouTube links may be refused. Direct links and uploads always work.",
     alternativesHeading: "Other tools you can use",
     alternativesLead:
       "This source cannot be processed. These tools work with a different kind of input.",

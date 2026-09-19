@@ -754,6 +754,7 @@ export function AnalyzeWidget({
             {copy.widget.cannotProcess}
           </p>
           <StatusPanel role="status" error={analysis.reason} />
+          {analysis.platform?.toLowerCase() === "youtube" ? <YouTubeHelp /> : null}
           <Alternatives currentId={preselectedTool} />
         </div>
       ) : null}
@@ -1050,6 +1051,36 @@ function LimitsCard() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+const SELF_HOST_URL =
+  "https://github.com/sandeepbollavaram/anything-download#run-it-on-your-own-computer";
+
+/** Honest guidance when YouTube refuses this server; never a workaround for its bot check. */
+function YouTubeHelp() {
+  return (
+    <div className="surface rounded-2xl p-5">
+      <h3 className="font-display font-bold">{copy.widget.youtubeTitle}</h3>
+      <p className="text-muted-foreground mt-1 text-sm">{copy.widget.youtubeBody}</p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {copy.widget.youtubeTips.map((tip) => (
+          <li key={tip} className="flex gap-2.5">
+            <Check className="text-success mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <span>{tip}</span>
+          </li>
+        ))}
+      </ul>
+      <a
+        href={SELF_HOST_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-link mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold"
+      >
+        <span className="underline-grow">{copy.widget.youtubeSelfHost}</span>
+        <ArrowRight className="size-4" aria-hidden="true" />
+      </a>
     </div>
   );
 }

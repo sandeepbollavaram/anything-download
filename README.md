@@ -96,6 +96,45 @@ Open **http://localhost:3000**. The API is on http://localhost:8000
 No `.env` is required; every setting has a safe default. To change limits, copy
 `.env.example` to `.env` and edit it.
 
+## Run it on your own computer
+
+Anything Download is free to self-host, and running it on your own computer has one
+practical advantage: requests go out from your normal home or mobile connection, just
+like your browser. Some platforms, YouTube in particular, block many cloud servers with a
+"confirm you're not a bot" check. The public site never tries to get around that check,
+but a copy running on your own machine is not a cloud server.
+
+1. Install **Docker Desktop** from [docker.com](https://www.docker.com/products/docker-desktop/)
+   and start it. (Windows, macOS and Linux are all supported.)
+2. Install **Git** from [git-scm.com](https://git-scm.com/downloads) if you do not have it.
+3. Open a terminal (PowerShell on Windows) and run:
+
+   ```bash
+   git clone https://github.com/sandeepbollavaram/anything-download.git
+   cd anything-download
+   docker compose up -d --build --wait
+   ```
+
+   The first build takes a few minutes. Later starts take seconds.
+4. Open **http://localhost:3000** and use it exactly like the website.
+
+Everyday commands, run inside the `anything-download` folder:
+
+| Task | Command |
+| --- | --- |
+| Stop it | `docker compose down` |
+| Start it again | `docker compose up -d --wait` |
+| Update to the latest version | `git pull` then `docker compose up -d --build --wait` |
+
+Good to know:
+
+- Everything stays on your computer. Files still delete themselves after 30 minutes.
+- Heavy use can still trigger a platform's checks, even from a home connection. If that
+  happens, wait a while before trying again.
+- The same rules apply: only public content, or files you have the right to use. Please
+  respect each platform's terms. For your own YouTube videos, YouTube Studio can download
+  the original file (Content, then the menu, then Download).
+
 ## How it works
 
 ```mermaid

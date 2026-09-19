@@ -56,6 +56,11 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
             </li>
           ))}
         </ul>
+        {tool.inputs.includes("url") && (tool.category === "video" || tool.category === "audio") ? (
+          <p className="text-muted-foreground border-border mt-4 border-t pt-3 text-xs">
+            {copy.widget.platformNote}
+          </p>
+        ) : null}
       </div>
       {related.length ? (
         <div className="surface rounded-2xl p-5">

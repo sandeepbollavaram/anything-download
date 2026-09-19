@@ -99,6 +99,76 @@ test.describe("hero workspace", () => {
   });
 });
 
+test.describe("platform refusals", () => {
+  test("a YouTube refusal explains why and offers honest alternatives", async ({ page }) => {
+    await page.route("**/api/v1/analyze", (route) =>
+      route.fulfill({
+        json: {
+          normalized_url: "https://youtu.be/example",
+          source_kind: "platform",
+          resource_type: "UNKNOWN",
+          platform: "youtube",
+          capabilities: [],
+          tools: [],
+          formats: [],
+          restrictions: ["public_content_only"],
+          warnings: [],
+          resource_counts: {},
+          status: "unsupported",
+          reason: {
+            code: "SOURCE_UNREACHABLE",
+            message: "The platform is temporarily limiting requests from this server.",
+            retryable: true,
+          },
+        },
+      }),
+    );
+    await page.goto(`/analyze?url=${encodeURIComponent("https://youtu.be/example")}`);
+    await expect(
+      page.getByRole("heading", { name: "Why YouTube links often fail here" }),
+    ).toBeVisible();
+    await expect(page.getByText(/Direct video links and file uploads always work/)).toBeVisible();
+    const selfHost = page.getByRole("link", { name: /How to run it yourself/ });
+    await expect(selfHost).toHaveAttribute("href", /#run-it-on-your-own-computer$/);
+    await expect(selfHost).toHaveAttribute("rel", /noopener/);
+    // Never a download button for a refused source.
+    await expect(page.getByRole("link", { name: "Download", exact: true })).toHaveCount(0);
+  });
+
+  test("other platform refusals do not show the YouTube note", async ({ page }) => {
+    await page.route("**/api/v1/analyze", (route) =>
+      route.fulfill({
+        json: {
+          normalized_url: "https://vimeo.com/1",
+          source_kind: "platform",
+          resource_type: "UNKNOWN",
+          platform: "vimeo",
+          capabilities: [],
+          tools: [],
+          formats: [],
+          restrictions: [],
+          warnings: [],
+          resource_counts: {},
+          status: "restricted",
+          reason: { code: "SOURCE_PRIVATE", message: "This video is private.", retryable: false },
+        },
+      }),
+    );
+    await page.goto(`/analyze?url=${encodeURIComponent("https://vimeo.com/1")}`);
+    await expect(page.getByText("This video is private.")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Why YouTube links often fail here" }),
+    ).toHaveCount(0);
+  });
+
+  test("video tool pages mention the YouTube limitation", async ({ page }) => {
+    await page.goto("/tools/video-downloader");
+    await expect(page.getByText(/YouTube currently blocks many servers/)).toBeVisible();
+    await page.goto("/tools/image-compressor");
+    await expect(page.getByText(/YouTube currently blocks many servers/)).toHaveCount(0);
+  });
+});
+
 test.describe("tool discovery", () => {
   test("search filters instantly and shows an empty state", async ({ page }) => {
     await page.goto("/tools");

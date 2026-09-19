@@ -1,7 +1,8 @@
 """Structured logging with redaction of sensitive values.
 
 We never log Authorization headers, cookies, credentials or query strings
-(which may contain signed tokens). URLs are reduced to ``scheme://host/path``.
+(which may contain signed tokens). URLs are reduced to ``scheme://host[:port]``: the path
+can identify exactly what a person looked up (for example a video ID), so it is dropped.
 """
 
 from __future__ import annotations
@@ -18,11 +19,12 @@ _SENSITIVE_KEYS = re.compile(
     r"(authorization|cookie|set-cookie|token|secret|password|passwd|api[-_]?key|credential|signature)",
     re.IGNORECASE,
 )
+_URL_KEYS = frozenset({"url", "source_url", "target", "final_url", "normalized_url"})
 _URL_IN_TEXT = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
 
 
 def redact_url(url: str) -> str:
-    """Strip query string, fragment and userinfo from a URL for logging."""
+    """Reduce a URL to ``scheme://host[:port]`` for logging (no path, query, fragment or userinfo)."""
     try:
         parts = urlsplit(url)
     except ValueError:
@@ -30,14 +32,14 @@ def redact_url(url: str) -> str:
     host = parts.hostname or ""
     if parts.port:
         host = f"{host}:{parts.port}"
-    return urlunsplit((parts.scheme, host, parts.path, "", ""))
+    return urlunsplit((parts.scheme, host, "", "", ""))
 
 
 def _redact_processor(_: Any, __: str, event_dict: dict[str, Any]) -> dict[str, Any]:
     for key in list(event_dict.keys()):
         if _SENSITIVE_KEYS.search(key):
             event_dict[key] = "[REDACTED]"
-        elif key in {"url", "source_url", "target"} and isinstance(event_dict[key], str):
+        elif key in _URL_KEYS and isinstance(event_dict[key], str):
             event_dict[key] = redact_url(event_dict[key])
         elif key == "message" and isinstance(event_dict[key], str):
             event_dict[key] = _redact_urls_in_text(event_dict[key])
